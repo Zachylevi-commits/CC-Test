@@ -1,0 +1,20 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+    Layout = "MasterLayout/_Master.cshtml";
+    var hero = Model.Value<BlockGridModel>("hero");
+    var blocks = Model.Value<BlockGridModel>("contentBlocks");
+}
+
+@if (hero is not null && hero.Any())
+{
+    <section class="page-hero">
+        @await Html.PartialAsync("blockgrid/default", hero)
+    </section>
+}
+
+<article class="page-body">
+    @if (blocks is not null && blocks.Any())
+    {
+        @await Html.PartialAsync("blockgrid/default", blocks)
+    }
+</article>

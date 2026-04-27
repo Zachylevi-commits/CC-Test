@@ -1,0 +1,52 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+    Layout = "MasterLayout/_Master.cshtml";
+
+    var title = Model.Value<string>("title") ?? Model.Name;
+    var author = Model.Value<string>("author");
+    var publishedAt = Model.Value<DateTime?>("publishDate") ?? Model.CreateDate;
+    var hero = Model.Value<IPublishedContent>("heroImage");
+    var excerpt = Model.Value<string>("excerpt");
+    var tags = Model.Value<IEnumerable<string>>("tags") ?? Enumerable.Empty<string>();
+    var blocks = Model.Value<BlockGridModel>("contentBlocks");
+}
+
+<article class="article">
+    <header class="article__header container">
+        @if (tags.Any())
+        {
+            <ul class="article__tags">
+                @foreach (var t in tags)
+                {
+                    <li>#@t</li>
+                }
+            </ul>
+        }
+        <h1 class="article__title">@title</h1>
+        <p class="article__meta">
+            @if (!string.IsNullOrWhiteSpace(author))
+            {
+                <span>By <strong>@author</strong></span>
+            }
+            <time datetime="@publishedAt.ToString("o")">@publishedAt.ToString("MMMM d, yyyy")</time>
+        </p>
+        @if (!string.IsNullOrWhiteSpace(excerpt))
+        {
+            <p class="article__excerpt">@excerpt</p>
+        }
+    </header>
+
+    @if (hero is not null)
+    {
+        <figure class="article__hero">
+            <img src="@hero.Url()" alt="@hero.Value<string>("altText")" />
+        </figure>
+    }
+
+    <div class="article__body container">
+        @if (blocks is not null && blocks.Any())
+        {
+            @await Html.PartialAsync("blockgrid/default", blocks)
+        }
+    </div>
+</article>

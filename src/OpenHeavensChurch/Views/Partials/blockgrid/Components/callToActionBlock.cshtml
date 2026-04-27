@@ -1,0 +1,27 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    var c = Model.Content;
+    var heading = c.Value<string>("heading");
+    var body = c.Value<string>("body");
+    var link = c.Value<Umbraco.Cms.Core.Models.Link>("link");
+    var bg = Model.Settings?.Value<string>("background") ?? "accent";
+}
+<section class="block block--cta cta cta--bg-@bg">
+    <div class="container cta__inner">
+        <div class="cta__content">
+            @if (!string.IsNullOrWhiteSpace(heading))
+            {
+                <h2>@heading</h2>
+            }
+            @if (!string.IsNullOrWhiteSpace(body))
+            {
+                <p>@body</p>
+            }
+        </div>
+        @if (link is not null)
+        {
+            <a class="btn btn--primary" href="@link.Url" target="@link.Target">@link.Name</a>
+        }
+    </div>
+</section>

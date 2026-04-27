@@ -1,0 +1,24 @@
+## Build artefacts
+bin/
+obj/
+out/
+
+## Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+
+## Logs
+logs/
+*.log
+
+## Umbraco
+umbraco/Data/
+umbraco/Logs/
+umbraco/mediafiles/
+appsettings.Local.json
+
+## OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,26 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    var c = Model.Content;
+    var image = c.Value<IPublishedContent>("image");
+    if (image is null) { return; }
+    var caption = c.Value<string>("caption");
+    var alt = c.Value<string>("altText") ?? image.Value<string>("altText");
+    var lightbox = c.Value<bool>("openInLightbox");
+}
+<figure class="block block--image">
+    @if (lightbox)
+    {
+        <a href="@image.Url()" data-lightbox="@image.Id">
+            <img src="@image.GetCropUrl(width: 1600, quality: 80)" alt="@alt" loading="lazy" />
+        </a>
+    }
+    else
+    {
+        <img src="@image.GetCropUrl(width: 1600, quality: 80)" alt="@alt" loading="lazy" />
+    }
+    @if (!string.IsNullOrWhiteSpace(caption))
+    {
+        <figcaption>@caption</figcaption>
+    }
+</figure>

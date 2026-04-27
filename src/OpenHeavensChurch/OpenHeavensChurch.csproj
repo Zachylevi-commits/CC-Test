@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>OpenHeavensChurch</RootNamespace>
+
+    <!-- Razor compilation -->
+    <RazorCompileOnBuild>true</RazorCompileOnBuild>
+    <RazorCompileOnPublish>true</RazorCompileOnPublish>
+
+    <!-- Umbraco models builder -->
+    <Umbraco.ModelsBuilder.IncludeNonPartialClasses>false</Umbraco.ModelsBuilder.IncludeNonPartialClasses>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Umbraco 17 LTS -->
+    <PackageReference Include="Umbraco.Cms" Version="17.0.0" />
+    <PackageReference Include="Umbraco.Cms.Persistence.SqlServer" Version="17.0.0" />
+
+    <!-- Configuration and DI helpers -->
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
+
+    <!-- uSync for code-first / portable document type definitions -->
+    <PackageReference Include="uSync" Version="17.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Razor view files are included by default; explicitly include partials so missing
+         document types do not cause silent fallbacks. -->
+    <Content Update="Views\**\*.cshtml">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

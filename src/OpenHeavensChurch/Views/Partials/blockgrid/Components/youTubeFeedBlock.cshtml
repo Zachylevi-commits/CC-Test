@@ -1,0 +1,38 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@inject IYouTubeService YouTube
+@{
+    var c = Model.Content;
+    var heading = c.Value<string>("heading") ?? "Latest from YouTube";
+    var max = c.Value<int>("maxResults", fallback: Fallback.ToDefaultValue, defaultValue: 6);
+    var channelOverride = c.Value<string>("channelIdOverride");
+    var videos = await YouTube.GetLatestVideosAsync(max, channelOverride, Context.RequestAborted);
+}
+<section class="block block--youtube-feed">
+    <header class="container">
+        <h2>@heading</h2>
+    </header>
+    <div class="container">
+        @if (!videos.Any())
+        {
+            <p class="empty-state">Videos will be listed here as soon as they're available.</p>
+        }
+        else
+        {
+            <ul class="video-grid">
+                @foreach (var v in videos)
+                {
+                    <li class="video-card">
+                        <a class="video-card__link" href="@v.WatchUrl" target="_blank" rel="noopener">
+                            <div class="video-card__thumb" style="background-image:url('@v.ThumbnailUrl')" aria-hidden="true"></div>
+                            <div class="video-card__body">
+                                <h3 class="video-card__title">@v.Title</h3>
+                                <time datetime="@v.PublishedAt.ToString("o")">@v.PublishedAt.ToString("MMM d, yyyy")</time>
+                            </div>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>

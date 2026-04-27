@@ -1,0 +1,70 @@
+@model OpenHeavensChurch.Models.ContactFormModel
+@{
+    var topics = new[]
+    {
+        "General enquiry",
+        "Plan a visit",
+        "Pastoral care",
+        "Prayer request",
+        "Volunteering",
+        "Media / press"
+    };
+}
+<form class="contact-form"
+      method="post"
+      asp-controller="Contact"
+      asp-action="Submit"
+      novalidate>
+    <input type="hidden" asp-for="ReturnUrl" />
+
+    <div asp-validation-summary="ModelOnly" class="form-summary" role="alert"></div>
+
+    <div class="form-row">
+        <label for="contact-name">Your name <span aria-hidden="true">*</span></label>
+        <input id="contact-name" asp-for="Name" autocomplete="name" required />
+        <span asp-validation-for="Name" class="form-error"></span>
+    </div>
+
+    <div class="form-row">
+        <label for="contact-email">Email <span aria-hidden="true">*</span></label>
+        <input id="contact-email" type="email" asp-for="Email" autocomplete="email" required />
+        <span asp-validation-for="Email" class="form-error"></span>
+    </div>
+
+    <div class="form-row">
+        <label for="contact-phone">Phone (optional)</label>
+        <input id="contact-phone" type="tel" asp-for="Phone" autocomplete="tel" />
+    </div>
+
+    <div class="form-row">
+        <label for="contact-topic">What's this about?</label>
+        <select id="contact-topic" asp-for="Topic">
+            @foreach (var t in topics)
+            {
+                <option value="@t" selected="@(string.Equals(Model.Topic, t, StringComparison.OrdinalIgnoreCase))">@t</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-row">
+        <label for="contact-message">Message <span aria-hidden="true">*</span></label>
+        <textarea id="contact-message" asp-for="Message" rows="6" required></textarea>
+        <span asp-validation-for="Message" class="form-error"></span>
+    </div>
+
+    <div class="form-row form-row--checkbox">
+        <input id="contact-consent" type="checkbox" asp-for="Consent" required />
+        <label for="contact-consent">
+            I agree to be contacted regarding this enquiry. We'll never share your details.
+        </label>
+        <span asp-validation-for="Consent" class="form-error"></span>
+    </div>
+
+    <!-- Honeypot. Real users should leave this empty. -->
+    <div class="form-row form-row--honeypot" aria-hidden="true">
+        <label>Leave blank</label>
+        <input type="text" asp-for="Website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <button type="submit" class="btn btn--primary">Send message</button>
+</form>

@@ -1,0 +1,29 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    var c = Model.Content;
+    var name = c.Value<string>("name");
+    var role = c.Value<string>("role");
+    var photo = c.Value<IPublishedContent>("photo");
+    var bio = c.Value<string>("bio");
+    var email = c.Value<string>("email");
+}
+<article class="block block--team-member team-member">
+    @if (photo is not null)
+    {
+        <img class="team-member__photo" src="@photo.GetCropUrl(width: 480, height: 480, quality: 80)" alt="@name" loading="lazy" />
+    }
+    <h3 class="team-member__name">@name</h3>
+    @if (!string.IsNullOrWhiteSpace(role))
+    {
+        <p class="team-member__role">@role</p>
+    }
+    @if (!string.IsNullOrWhiteSpace(bio))
+    {
+        <p class="team-member__bio">@bio</p>
+    }
+    @if (!string.IsNullOrWhiteSpace(email))
+    {
+        <a class="team-member__email" href="mailto:@email">@email</a>
+    }
+</article>

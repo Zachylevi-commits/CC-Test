@@ -1,0 +1,5 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockListItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockListItem>
+<div class="rich-text rich-text--compact">
+    @Model.Content.Value<IHtmlEncodedString>("body")
+</div>

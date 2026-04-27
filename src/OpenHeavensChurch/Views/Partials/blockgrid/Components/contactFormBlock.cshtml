@@ -1,0 +1,22 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    var c = Model.Content;
+    var heading = c.Value<string>("heading") ?? "Get in touch";
+    var intro = c.Value<string>("intro");
+    var topic = c.Value<string>("topic"); // pre-fills the dropdown
+}
+<section class="block block--contact-form contact-form-block">
+    <div class="container contact-form-block__inner">
+        <h2>@heading</h2>
+        @if (!string.IsNullOrWhiteSpace(intro))
+        {
+            <p>@intro</p>
+        }
+        @await Html.PartialAsync("Forms/ContactForm", new OpenHeavensChurch.Models.ContactFormModel
+        {
+            Topic = topic,
+            ReturnUrl = Context.Request.Path + "?submitted=1"
+        })
+    </div>
+</section>

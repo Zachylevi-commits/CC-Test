@@ -1,0 +1,14 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockListItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockListItem>
+@{
+    var c = Model.Content;
+    var buttons = c.Value<IEnumerable<Umbraco.Cms.Core.Models.Link>>("buttons") ?? Enumerable.Empty<Umbraco.Cms.Core.Models.Link>();
+    var alignment = c.Value<string>("alignment") ?? "start";
+}
+<div class="button-group button-group--align-@alignment">
+    @foreach (var (b, idx) in buttons.Select((b, i) => (b, i)))
+    {
+        var primary = idx == 0;
+        <a class="btn @(primary ? "btn--primary" : "btn--ghost")" href="@b.Url" target="@b.Target">@b.Name</a>
+    }
+</div>

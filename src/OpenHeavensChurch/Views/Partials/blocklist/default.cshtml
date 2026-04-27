@@ -1,0 +1,23 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<BlockListModel>
+@{
+    if (Model is null || !Model.Any()) { return; }
+}
+<div class="umb-block-list">
+    @foreach (var item in Model)
+    {
+        var alias = item.Content.ContentType.Alias;
+        var partial = $"blocklist/Components/{alias}";
+        <div class="umb-block-list__item" data-block-alias="@alias">
+            @{
+                try
+                {
+                    @await Html.PartialAsync(partial, item)
+                }
+                catch (InvalidOperationException)
+                {
+                    @await Html.PartialAsync("blocklist/Components/_fallback", item)
+                }
+            }
+        </div>
+    }
+</div>

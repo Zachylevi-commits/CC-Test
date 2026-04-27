@@ -1,0 +1,118 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@inject IYouTubeService YouTube
+@inject ISongsService Songs
+@{
+    Layout = "MasterLayout/_Master.cshtml";
+
+    var headline = Model.Value<string>("headline") ?? Model.Name;
+    var lead = Model.Value<string>("lead");
+
+    var maxVideos = Model.Value<int>("maxVideos", fallback: Fallback.ToDefaultValue, defaultValue: 9);
+    var maxSongs = Model.Value<int>("maxSongs", fallback: Fallback.ToDefaultValue, defaultValue: 12);
+    var channelOverride = Model.Value<string>("youTubeChannelIdOverride");
+    var songsFeedOverride = Model.Value<string>("songsFeedUrlOverride");
+
+    var videos = await YouTube.GetLatestVideosAsync(maxVideos, channelOverride, Context.RequestAborted);
+    var songs = await Songs.GetLatestSongsAsync(maxSongs, songsFeedOverride, Context.RequestAborted);
+
+    var blocks = Model.Value<BlockGridModel>("contentBlocks");
+}
+
+<header class="page-header container">
+    <h1>@headline</h1>
+    @if (!string.IsNullOrWhiteSpace(lead))
+    {
+        <p class="lead">@lead</p>
+    }
+</header>
+
+@if (blocks is not null && blocks.Any())
+{
+    <section class="container">
+        @await Html.PartialAsync("blockgrid/default", blocks)
+    </section>
+}
+
+<section class="container media-section" aria-labelledby="latest-videos">
+    <header class="media-section__header">
+        <h2 id="latest-videos">Latest videos</h2>
+        @if (!string.IsNullOrWhiteSpace(channelOverride))
+        {
+            <a class="media-section__more" href="https://youtube.com/channel/@channelOverride" target="_blank" rel="noopener">View channel</a>
+        }
+    </header>
+
+    @if (!videos.Any())
+    {
+        <p class="empty-state">New sermons and worship videos will appear here as soon as they're published.</p>
+    }
+    else
+    {
+        <ul class="video-grid" data-component="video-grid">
+            @foreach (var v in videos)
+            {
+                <li class="video-card">
+                    <a class="video-card__link" href="@v.WatchUrl" target="_blank" rel="noopener">
+                        <div class="video-card__thumb" style="background-image:url('@v.ThumbnailUrl')" aria-hidden="true"></div>
+                        <div class="video-card__body">
+                            <h3 class="video-card__title">@v.Title</h3>
+                            <time class="video-card__date" datetime="@v.PublishedAt.ToString("o")">@v.PublishedAt.ToString("MMM d, yyyy")</time>
+                            @if (!string.IsNullOrWhiteSpace(v.Description))
+                            {
+                                <p class="video-card__description">@v.ShortDescription(180)</p>
+                            }
+                        </div>
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+<section class="container media-section" aria-labelledby="latest-songs">
+    <header class="media-section__header">
+        <h2 id="latest-songs">Latest songs</h2>
+    </header>
+
+    @if (!songs.Any())
+    {
+        <p class="empty-state">Songs from the worship team will appear here as soon as they're released.</p>
+    }
+    else
+    {
+        <ul class="song-list" data-component="song-list">
+            @foreach (var s in songs)
+            {
+                <li class="song-card" data-song-id="@s.Id">
+                    <div class="song-card__art" style="background-image:url('@s.ArtworkUrl')" aria-hidden="true"></div>
+                    <div class="song-card__body">
+                        <h3 class="song-card__title">@s.Title</h3>
+                        <p class="song-card__artist">@s.Artist</p>
+                        @if (s.ReleasedAt.HasValue)
+                        {
+                            <time class="song-card__date" datetime="@s.ReleasedAt.Value.ToString("o")">@s.ReleasedAt.Value.ToString("MMM yyyy")</time>
+                        }
+                    </div>
+                    <div class="song-card__actions">
+                        <button class="btn btn--ghost song-card__menu-toggle" type="button"
+                                aria-haspopup="true" aria-expanded="false"
+                                aria-controls="song-menu-@s.Id">
+                            <span class="visually-hidden">Open on streaming platform</span>
+                            <span aria-hidden="true">Listen</span>
+                        </button>
+                        <ul id="song-menu-@s.Id" class="song-card__menu" role="menu" hidden>
+                            @foreach (var p in s.Platforms)
+                            {
+                                <li role="none">
+                                    <a role="menuitem" href="@p.Url" target="_blank" rel="noopener" data-platform="@p.Platform">
+                                        @p.DisplayName
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+</section>

@@ -1,0 +1,48 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    var c = Model.Content;
+    var url = c.Value<string>("videoUrl");
+    var caption = c.Value<string>("caption");
+    string? embedUrl = null;
+    if (!string.IsNullOrWhiteSpace(url) && Uri.TryCreate(url, UriKind.Absolute, out var u))
+    {
+        if (u.Host.Contains("youtube", StringComparison.OrdinalIgnoreCase))
+        {
+            var query = System.Web.HttpUtility.ParseQueryString(u.Query);
+            var id = query["v"] ?? u.Segments.LastOrDefault()?.Trim('/');
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                embedUrl = $"https://www.youtube-nocookie.com/embed/{id}";
+            }
+        }
+        else if (u.Host.Contains("vimeo", StringComparison.OrdinalIgnoreCase))
+        {
+            var id = u.Segments.LastOrDefault()?.Trim('/');
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                embedUrl = $"https://player.vimeo.com/video/{id}";
+            }
+        }
+    }
+}
+<figure class="block block--video">
+    @if (!string.IsNullOrWhiteSpace(embedUrl))
+    {
+        <div class="responsive-embed">
+            <iframe src="@embedUrl"
+                    title="@caption"
+                    loading="lazy"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+        </div>
+    }
+    else
+    {
+        <p><a href="@url" target="_blank" rel="noopener">Watch video</a></p>
+    }
+    @if (!string.IsNullOrWhiteSpace(caption))
+    {
+        <figcaption>@caption</figcaption>
+    }
+</figure>

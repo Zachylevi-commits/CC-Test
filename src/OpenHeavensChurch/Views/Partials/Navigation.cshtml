@@ -1,0 +1,63 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<IPublishedContent>
+@{
+    var root = Model;
+    if (root is null) { return; }
+
+    var navItems = root.Children
+        .Where(c => c.IsVisible() && c.Value<bool>("showInNavigation", fallback: Fallback.ToDefaultValue, defaultValue: true))
+        .ToList();
+
+    var current = UmbracoContext.PublishedRequest?.PublishedContent;
+    var logo = root.Value<IPublishedContent>("logo");
+}
+<header class="site-header" data-component="site-header">
+    <div class="site-header__inner container">
+        <a class="brand" href="@root.Url()" aria-label="@root.Value<string>("siteName")">
+            @if (logo is not null)
+            {
+                <img class="brand__logo" src="@logo.Url()" alt="@logo.Value<string>("altText")" />
+            }
+            else
+            {
+                <span class="brand__name">@(root.Value<string>("siteName") ?? "Open Heavens Church")</span>
+            }
+        </a>
+
+        <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false">
+            <span class="visually-hidden">Open menu</span>
+            <span class="nav-toggle__bar"></span>
+            <span class="nav-toggle__bar"></span>
+            <span class="nav-toggle__bar"></span>
+        </button>
+
+        <nav id="primary-nav" class="primary-nav" aria-label="Primary">
+            <ul class="primary-nav__list">
+                @foreach (var item in navItems)
+                {
+                    var isActive = current is not null && (current.Id == item.Id || current.Path.Contains("," + item.Id + ","));
+                    <li class="primary-nav__item @(isActive ? "is-active" : null)">
+                        <a class="primary-nav__link" href="@item.Url()">@item.Name</a>
+                        @if (item.Children.Any(c => c.IsVisible()))
+                        {
+                            <ul class="primary-nav__submenu">
+                                @foreach (var child in item.Children.Where(c => c.IsVisible()))
+                                {
+                                    <li><a href="@child.Url()">@child.Name</a></li>
+                                }
+                            </ul>
+                        }
+                    </li>
+                }
+            </ul>
+
+            @{
+                var ctaUrl = root.Value<Umbraco.Cms.Core.Models.Link>("primaryCta")?.Url;
+                var ctaText = root.Value<Umbraco.Cms.Core.Models.Link>("primaryCta")?.Name ?? "Plan a visit";
+            }
+            @if (!string.IsNullOrWhiteSpace(ctaUrl))
+            {
+                <a class="btn btn--primary primary-nav__cta" href="@ctaUrl">@ctaText</a>
+            }
+        </nav>
+    </div>
+</header>

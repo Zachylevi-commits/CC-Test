@@ -1,0 +1,117 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@inject IArticlesService Articles
+@{
+    Layout = "MasterLayout/_Master.cshtml";
+
+    var headline = Model.Value<string>("headline") ?? Model.Name;
+    var lead = Model.Value<string>("lead");
+
+    // Articles can be authored in the back office (children of this page) or pulled from
+    // a third-party JSON feed configured per-page or in appsettings.
+    var sourceMode = Model.Value<string>("articleSource") ?? "Umbraco"; // "Umbraco" | "External"
+    var feedOverride = Model.Value<string>("externalFeedUrl");
+    var pageSize = Model.Value<int>("pageSize", fallback: Fallback.ToDefaultValue, defaultValue: 9);
+
+    int.TryParse(Context.Request.Query["page"], out var pageNumber);
+    if (pageNumber < 1) { pageNumber = 1; }
+
+    var query = new ArticleQuery
+    {
+        Source = string.Equals(sourceMode, "External", StringComparison.OrdinalIgnoreCase)
+            ? ArticleSource.External
+            : ArticleSource.Umbraco,
+        ListingPage = Model,
+        ExternalFeedUrl = feedOverride,
+        Page = pageNumber,
+        PageSize = pageSize,
+        Tag = Context.Request.Query["tag"].ToString()
+    };
+
+    var page = await Articles.GetArticlesAsync(query, Context.RequestAborted);
+    var allTags = await Articles.GetAllTagsAsync(query.Source, feedOverride, Context.RequestAborted);
+}
+
+<header class="page-header container">
+    <h1>@headline</h1>
+    @if (!string.IsNullOrWhiteSpace(lead))
+    {
+        <p class="lead">@lead</p>
+    }
+    <p class="article-source-note" data-source="@sourceMode">
+        <small>Source: @(sourceMode == "External" ? "External feed" : "Umbraco back office")</small>
+    </p>
+</header>
+
+@if (allTags.Any())
+{
+    <nav class="container article-tags" aria-label="Filter articles by tag">
+        <a class="tag @(string.IsNullOrEmpty(query.Tag) ? "is-active" : null)" href="@Model.Url()">All</a>
+        @foreach (var t in allTags)
+        {
+            <a class="tag @(string.Equals(t, query.Tag, StringComparison.OrdinalIgnoreCase) ? "is-active" : null)"
+               href="@Model.Url()?tag=@Uri.EscapeDataString(t)">@t</a>
+        }
+    </nav>
+}
+
+<section class="container">
+    @if (!page.Items.Any())
+    {
+        <p class="empty-state">No articles to show yet. Check back soon.</p>
+    }
+    else
+    {
+        <ul class="article-grid">
+            @foreach (var a in page.Items)
+            {
+                <li class="article-card">
+                    @if (!string.IsNullOrWhiteSpace(a.ImageUrl))
+                    {
+                        <div class="article-card__image" style="background-image:url('@a.ImageUrl')" aria-hidden="true"></div>
+                    }
+                    <div class="article-card__body">
+                        @if (a.PublishedAt.HasValue)
+                        {
+                            <time class="article-card__date" datetime="@a.PublishedAt.Value.ToString("o")">@a.PublishedAt.Value.ToString("MMM d, yyyy")</time>
+                        }
+                        <h3 class="article-card__title">
+                            <a href="@a.Url">@a.Title</a>
+                        </h3>
+                        @if (!string.IsNullOrWhiteSpace(a.Excerpt))
+                        {
+                            <p class="article-card__excerpt">@a.Excerpt</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(a.Author))
+                        {
+                            <p class="article-card__author">By @a.Author</p>
+                        }
+                        @if (a.Tags.Any())
+                        {
+                            <ul class="article-card__tags">
+                                @foreach (var t in a.Tags)
+                                {
+                                    <li><a href="@Model.Url()?tag=@Uri.EscapeDataString(t)">#@t</a></li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </li>
+            }
+        </ul>
+
+        @if (page.TotalPages > 1)
+        {
+            <nav class="pagination" aria-label="Articles pagination">
+                @if (page.Page > 1)
+                {
+                    <a class="pagination__prev" href="?page=@(page.Page - 1)@(string.IsNullOrEmpty(query.Tag) ? "" : "&tag=" + Uri.EscapeDataString(query.Tag))">&larr; Newer</a>
+                }
+                <span class="pagination__current">Page @page.Page of @page.TotalPages</span>
+                @if (page.Page < page.TotalPages)
+                {
+                    <a class="pagination__next" href="?page=@(page.Page + 1)@(string.IsNullOrEmpty(query.Tag) ? "" : "&tag=" + Uri.EscapeDataString(query.Tag))">Older &rarr;</a>
+                }
+            </nav>
+        }
+    }
+</section>

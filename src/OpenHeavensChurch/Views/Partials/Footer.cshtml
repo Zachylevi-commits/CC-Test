@@ -1,0 +1,62 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<IPublishedContent>
+@{
+    var root = Model;
+    if (root is null) { return; }
+
+    var address = root.Value<string>("contactAddress");
+    var phone = root.Value<string>("contactPhone");
+    var email = root.Value<string>("contactEmail");
+    var socials = root.Value<IEnumerable<Umbraco.Cms.Core.Models.Link>>("socialLinks") ?? Enumerable.Empty<Umbraco.Cms.Core.Models.Link>();
+    var footerColumns = root.Value<IEnumerable<IPublishedContent>>("footerColumns") ?? Enumerable.Empty<IPublishedContent>();
+}
+<footer class="site-footer" role="contentinfo">
+    <div class="container site-footer__grid">
+        <div class="site-footer__brand">
+            <h2 class="site-footer__name">@root.Value<string>("siteName")</h2>
+            @if (!string.IsNullOrWhiteSpace(address))
+            {
+                <address>@Html.Raw(address.Replace("\n", "<br />"))</address>
+            }
+            <ul class="site-footer__contact">
+                @if (!string.IsNullOrWhiteSpace(phone))
+                {
+                    <li><a href="tel:@phone">@phone</a></li>
+                }
+                @if (!string.IsNullOrWhiteSpace(email))
+                {
+                    <li><a href="mailto:@email">@email</a></li>
+                }
+            </ul>
+        </div>
+
+        @foreach (var col in footerColumns)
+        {
+            <div class="site-footer__column">
+                <h3>@col.Value<string>("heading")</h3>
+                @{
+                    var links = col.Value<IEnumerable<Umbraco.Cms.Core.Models.Link>>("links") ?? Enumerable.Empty<Umbraco.Cms.Core.Models.Link>();
+                }
+                <ul>
+                    @foreach (var l in links)
+                    {
+                        <li><a href="@l.Url" target="@l.Target">@l.Name</a></li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="site-footer__social">
+            <h3>Follow us</h3>
+            <ul class="social-links">
+                @foreach (var s in socials)
+                {
+                    <li><a href="@s.Url" target="_blank" rel="noopener" aria-label="@s.Name">@s.Name</a></li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="site-footer__legal container">
+        <small>&copy; @DateTime.UtcNow.Year @root.Value<string>("siteName"). All rights reserved.</small>
+    </div>
+</footer>

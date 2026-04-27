@@ -1,0 +1,44 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+    Layout = "MasterLayout/_Master.cshtml";
+
+    var blocks = Model.Value<BlockGridModel>("contentBlocks");
+    var headline = Model.Value<string>("headline") ?? Model.Name;
+    var lead = Model.Value<string>("lead");
+    var formHeading = Model.Value<string>("formHeading") ?? "Send us a message";
+
+    var success = Context.Request.Query.ContainsKey("submitted");
+}
+
+<header class="page-header container">
+    <h1>@headline</h1>
+    @if (!string.IsNullOrWhiteSpace(lead))
+    {
+        <p class="lead">@lead</p>
+    }
+</header>
+
+<section class="container contact-grid">
+    <div class="contact-grid__details">
+        @if (blocks is not null && blocks.Any())
+        {
+            @await Html.PartialAsync("blockgrid/default", blocks)
+        }
+    </div>
+
+    <div class="contact-grid__form">
+        <h2>@formHeading</h2>
+
+        @if (success)
+        {
+            <div class="alert alert--success" role="status">
+                <p>Thanks for reaching out! A member of the team will be in touch shortly.</p>
+            </div>
+        }
+
+        @await Html.PartialAsync("Forms/ContactForm", new OpenHeavensChurch.Models.ContactFormModel
+        {
+            ReturnUrl = Model.Url() + "?submitted=1"
+        })
+    </div>
+</section>

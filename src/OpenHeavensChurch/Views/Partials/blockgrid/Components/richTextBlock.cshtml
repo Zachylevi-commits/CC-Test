@@ -1,0 +1,12 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    var c = Model.Content;
+    var width = Model.Settings?.Value<string>("contentWidth") ?? "narrow"; // narrow | wide | full
+    var rte = c.Value<IHtmlEncodedString>("body");
+}
+<section class="block block--rich-text rich-text rich-text--@width">
+    <div class="container">
+        @rte
+    </div>
+</section>

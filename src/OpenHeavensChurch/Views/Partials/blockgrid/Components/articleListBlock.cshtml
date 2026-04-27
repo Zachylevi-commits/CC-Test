@@ -1,0 +1,58 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@inject IArticlesService Articles
+@{
+    var c = Model.Content;
+    var heading = c.Value<string>("heading") ?? "From the blog";
+    var max = c.Value<int>("maxResults", fallback: Fallback.ToDefaultValue, defaultValue: 3);
+    var sourceMode = c.Value<string>("source") ?? "Umbraco";
+    var feedOverride = c.Value<string>("externalFeedUrl");
+
+    // Find the closest articles listing page so card links resolve when source is Umbraco.
+    var listing = c.Value<IPublishedContent>("listingPage");
+
+    var page = await Articles.GetArticlesAsync(new ArticleQuery
+    {
+        Source = string.Equals(sourceMode, "External", StringComparison.OrdinalIgnoreCase) ? ArticleSource.External : ArticleSource.Umbraco,
+        ListingPage = listing,
+        ExternalFeedUrl = feedOverride,
+        Page = 1,
+        PageSize = max
+    }, Context.RequestAborted);
+}
+<section class="block block--articles">
+    <header class="container">
+        <h2>@heading</h2>
+    </header>
+    <div class="container">
+        @if (!page.Items.Any())
+        {
+            <p class="empty-state">Articles will appear here once they're published.</p>
+        }
+        else
+        {
+            <ul class="article-grid article-grid--compact">
+                @foreach (var a in page.Items)
+                {
+                    <li class="article-card">
+                        @if (!string.IsNullOrWhiteSpace(a.ImageUrl))
+                        {
+                            <div class="article-card__image" style="background-image:url('@a.ImageUrl')" aria-hidden="true"></div>
+                        }
+                        <div class="article-card__body">
+                            @if (a.PublishedAt.HasValue)
+                            {
+                                <time datetime="@a.PublishedAt.Value.ToString("o")">@a.PublishedAt.Value.ToString("MMM d, yyyy")</time>
+                            }
+                            <h3><a href="@a.Url">@a.Title</a></h3>
+                            @if (!string.IsNullOrWhiteSpace(a.Excerpt))
+                            {
+                                <p>@a.Excerpt</p>
+                            }
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>

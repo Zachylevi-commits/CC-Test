@@ -1,0 +1,57 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    var c = Model.Content;
+    var heading = c.Value<string>("heading");
+    var tabs = c.Value<BlockListModel>("tabs");
+    var groupId = $"tabs-{Model.ContentUdi.ToString().GetHashCode():x}";
+}
+<section class="block block--tabs tabs" data-component="tabs">
+    @if (!string.IsNullOrWhiteSpace(heading))
+    {
+        <header class="container"><h2>@heading</h2></header>
+    }
+    <div class="container">
+        @if (tabs is not null && tabs.Any())
+        {
+            <div role="tablist" class="tabs__list">
+                @{
+                    var idx = 0;
+                    foreach (var tab in tabs)
+                    {
+                        var tc = tab.Content;
+                        var label = tc.Value<string>("label");
+                        var tabId = $"{groupId}-tab-{idx}";
+                        var panelId = $"{groupId}-panel-{idx}";
+                        <button role="tab" id="@tabId" aria-controls="@panelId"
+                                aria-selected="@(idx == 0 ? "true" : "false")"
+                                class="tabs__tab @(idx == 0 ? "is-active" : null)"
+                                tabindex="@(idx == 0 ? "0" : "-1")">@label</button>
+                        idx++;
+                    }
+                }
+            </div>
+            <div class="tabs__panels">
+                @{
+                    idx = 0;
+                    foreach (var tab in tabs)
+                    {
+                        var tc = tab.Content;
+                        var content = tc.Value<BlockListModel>("content");
+                        var tabId = $"{groupId}-tab-{idx}";
+                        var panelId = $"{groupId}-panel-{idx}";
+                        <div role="tabpanel" id="@panelId" aria-labelledby="@tabId"
+                             class="tabs__panel @(idx == 0 ? "is-active" : null)"
+                             @(idx == 0 ? null : "hidden")>
+                            @if (content is not null && content.Any())
+                            {
+                                @await Html.PartialAsync("blocklist/default", content)
+                            }
+                        </div>
+                        idx++;
+                    }
+                }
+            </div>
+        }
+    </div>
+</section>

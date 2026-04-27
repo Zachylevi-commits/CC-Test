@@ -1,0 +1,23 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    var c = Model.Content;
+    var quote = c.Value<string>("quote");
+    var attribution = c.Value<string>("attribution");
+    var reference = c.Value<string>("reference"); // e.g. "Psalm 23:1"
+}
+<figure class="block block--quote pull-quote">
+    <blockquote>
+        <p>&ldquo;@quote&rdquo;</p>
+    </blockquote>
+    <figcaption>
+        @if (!string.IsNullOrWhiteSpace(attribution))
+        {
+            <span class="pull-quote__attribution">@attribution</span>
+        }
+        @if (!string.IsNullOrWhiteSpace(reference))
+        {
+            <cite class="pull-quote__reference">@reference</cite>
+        }
+    </figcaption>
+</figure>

@@ -1,0 +1,29 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    // Container block: each `Area` represents a column. Columns can host any other
+    // grid blocks - including additional containers - via the recursive areas partial.
+    var heading = Model.Content.Value<string>("heading");
+}
+<section class="block block--columns columns">
+    @if (!string.IsNullOrWhiteSpace(heading))
+    {
+        <header class="container">
+            <h2>@heading</h2>
+        </header>
+    }
+    <div class="container columns__grid"
+         style="--columns-count: @(Model.Areas?.Count() ?? 1);">
+        @if (Model.Areas is not null)
+        {
+            foreach (var area in Model.Areas)
+            {
+                <div class="columns__column"
+                     style="--column-span: @(area.ColumnSpan);"
+                     data-area-alias="@area.Alias">
+                    @await Html.PartialAsync("blockgrid/areas", area.Items)
+                </div>
+            }
+        }
+    </div>
+</section>

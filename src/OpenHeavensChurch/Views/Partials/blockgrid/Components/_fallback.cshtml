@@ -1,0 +1,9 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    var alias = Model.Content.ContentType.Alias;
+}
+<div class="block block--unknown" role="region" aria-label="@alias">
+    <p><strong>@alias</strong></p>
+    <p><em>No template registered for this block type.</em></p>
+</div>

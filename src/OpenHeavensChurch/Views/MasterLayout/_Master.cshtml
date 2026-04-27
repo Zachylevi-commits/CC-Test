@@ -1,0 +1,44 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+    Layout = null;
+
+    // Site root provides the global navigation, branding and theming. The site root
+    // is the first ancestor-or-self that has the documentTypeAlias "siteRoot" or, in
+    // simpler installs, the home page itself.
+    var siteRoot = Model.AncestorOrSelf<SiteRoot>() ?? Model.AncestorOrSelf<HomePage>() as IPublishedContent;
+    var siteName = siteRoot?.Value<string>("siteName") ?? "Open Heavens Church";
+    var tagline = siteRoot?.Value<string>("tagline") ?? "A place to encounter heaven on earth";
+    var pageTitle = Model.Value<string>("metaTitle") ?? Model.Name;
+    var pageDescription = Model.Value<string>("metaDescription") ?? tagline;
+    var ogImage = Model.Value<IPublishedContent>("metaImage")?.Url() ?? "/images/og-default.jpg";
+}
+<!DOCTYPE html>
+<html lang="@(siteRoot?.Value<string>("culture") ?? "en")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@pageTitle | @siteName</title>
+    <meta name="description" content="@pageDescription" />
+    <meta property="og:title" content="@pageTitle" />
+    <meta property="og:description" content="@pageDescription" />
+    <meta property="og:image" content="@ogImage" />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Head", required: false)
+</head>
+<body class="page page--@Model.ContentType.Alias.ToLowerInvariant()">
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    @await Html.PartialAsync("Navigation", siteRoot)
+
+    <main id="main" class="site-main">
+        @RenderBody()
+    </main>
+
+    @await Html.PartialAsync("Footer", siteRoot)
+
+    <script src="/js/site.js" asp-append-version="true" defer></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

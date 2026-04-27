@@ -1,0 +1,33 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    var c = Model.Content;
+    var heading = c.Value<string>("heading") ?? "Join us this Sunday";
+    var services = c.Value<BlockListModel>("services");
+}
+<section class="block block--service-times service-times" aria-labelledby="services-heading">
+    <div class="container">
+        <h2 id="services-heading">@heading</h2>
+        @if (services is not null && services.Any())
+        {
+            <ul class="service-times__list">
+                @foreach (var s in services)
+                {
+                    var svc = s.Content;
+                    <li class="service-time">
+                        <strong class="service-time__name">@svc.Value<string>("name")</strong>
+                        <span class="service-time__day">@svc.Value<string>("day")</span>
+                        <span class="service-time__time">@svc.Value<string>("time")</span>
+                        @{
+                            var loc = svc.Value<string>("location");
+                        }
+                        @if (!string.IsNullOrWhiteSpace(loc))
+                        {
+                            <span class="service-time__location">@loc</span>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>

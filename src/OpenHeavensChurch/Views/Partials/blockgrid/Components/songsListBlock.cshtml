@@ -1,0 +1,49 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@inject ISongsService Songs
+@{
+    var c = Model.Content;
+    var heading = c.Value<string>("heading") ?? "Latest songs";
+    var max = c.Value<int>("maxResults", fallback: Fallback.ToDefaultValue, defaultValue: 6);
+    var feedOverride = c.Value<string>("feedUrlOverride");
+    var songs = await Songs.GetLatestSongsAsync(max, feedOverride, Context.RequestAborted);
+}
+<section class="block block--songs">
+    <header class="container">
+        <h2>@heading</h2>
+    </header>
+    <div class="container">
+        @if (!songs.Any())
+        {
+            <p class="empty-state">Songs will be listed here as soon as they're released.</p>
+        }
+        else
+        {
+            <ul class="song-list">
+                @foreach (var s in songs)
+                {
+                    <li class="song-card" data-song-id="@s.Id">
+                        <div class="song-card__art" style="background-image:url('@s.ArtworkUrl')" aria-hidden="true"></div>
+                        <div class="song-card__body">
+                            <h3>@s.Title</h3>
+                            <p>@s.Artist</p>
+                        </div>
+                        <div class="song-card__actions">
+                            <button type="button" class="btn btn--ghost song-card__menu-toggle"
+                                    aria-haspopup="true" aria-expanded="false"
+                                    aria-controls="song-menu-block-@s.Id">Listen</button>
+                            <ul id="song-menu-block-@s.Id" class="song-card__menu" role="menu" hidden>
+                                @foreach (var p in s.Platforms)
+                                {
+                                    <li role="none">
+                                        <a role="menuitem" href="@p.Url" target="_blank" rel="noopener" data-platform="@p.Platform">@p.DisplayName</a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>

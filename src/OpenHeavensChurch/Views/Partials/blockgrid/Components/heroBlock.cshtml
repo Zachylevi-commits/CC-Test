@@ -1,0 +1,46 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    var c = Model.Content;
+    var heading = c.Value<string>("heading");
+    var subheading = c.Value<string>("subheading");
+    var bg = c.Value<IPublishedContent>("backgroundImage");
+    var alignment = c.Value<string>("alignment") ?? "left";
+    var ctas = c.Value<IEnumerable<Umbraco.Cms.Core.Models.Link>>("ctas") ?? Enumerable.Empty<Umbraco.Cms.Core.Models.Link>();
+    var nested = c.Value<BlockListModel>("nestedBlocks");
+    var theme = Model.Settings?.Value<string>("theme") ?? "dark";
+}
+<section class="block block--hero hero hero--align-@alignment hero--theme-@theme"
+         @if (bg is not null) { <text>style="background-image:url('@bg.Url()');"</text> }>
+    <div class="hero__overlay" aria-hidden="true"></div>
+    <div class="hero__inner container">
+        @if (!string.IsNullOrWhiteSpace(heading))
+        {
+            <h1 class="hero__heading">@heading</h1>
+        }
+        @if (!string.IsNullOrWhiteSpace(subheading))
+        {
+            <p class="hero__subheading">@subheading</p>
+        }
+
+        @if (ctas.Any())
+        {
+            <div class="hero__ctas">
+                @foreach (var (cta, idx) in ctas.Select((cta, idx) => (cta, idx)))
+                {
+                    var primary = idx == 0;
+                    <a class="btn @(primary ? "btn--primary" : "btn--ghost")"
+                       href="@cta.Url"
+                       target="@cta.Target">@cta.Name</a>
+                }
+            </div>
+        }
+
+        @if (nested is not null && nested.Any())
+        {
+            <div class="hero__nested">
+                @await Html.PartialAsync("blocklist/default", nested)
+            </div>
+        }
+    </div>
+</section>

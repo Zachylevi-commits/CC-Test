@@ -1,0 +1,10 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<BlockGridModel>
+@{
+    if (Model is null || !Model.Any()) { return; }
+
+    var gridColumns = Model.GridColumns ?? 12;
+}
+<div class="umb-block-grid"
+     style="--umb-block-grid--grid-columns: @gridColumns;">
+    @await Html.PartialAsync("blockgrid/areas", Model)
+</div>

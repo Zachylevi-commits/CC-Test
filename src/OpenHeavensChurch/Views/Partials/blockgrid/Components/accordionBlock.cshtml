@@ -1,0 +1,40 @@
+@model Umbraco.Cms.Core.Models.Blocks.BlockGridItem
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@{
+    var c = Model.Content;
+    var heading = c.Value<string>("heading");
+    // Each panel exposes a nested BlockListModel so editors can drop in any block (rich
+    // text, video embed, even another accordion) inside the body.
+    var panels = c.Value<BlockListModel>("panels");
+    var groupId = $"acc-{Model.ContentUdi.ToString().GetHashCode():x}";
+}
+<section class="block block--accordion accordion" data-component="accordion">
+    @if (!string.IsNullOrWhiteSpace(heading))
+    {
+        <header class="container"><h2>@heading</h2></header>
+    }
+    <div class="container">
+        @if (panels is not null)
+        {
+            var i = 0;
+            foreach (var panel in panels)
+            {
+                var pc = panel.Content;
+                var title = pc.Value<string>("title");
+                var body = pc.Value<BlockListModel>("body");
+                var startsOpen = pc.Value<bool>("startsOpen");
+                var panelId = $"{groupId}-{i}";
+                <details class="accordion__panel" id="@panelId" @(startsOpen ? "open" : null)>
+                    <summary class="accordion__summary">@title</summary>
+                    <div class="accordion__body">
+                        @if (body is not null && body.Any())
+                        {
+                            @await Html.PartialAsync("blocklist/default", body)
+                        }
+                    </div>
+                </details>
+                i++;
+            }
+        }
+    </div>
+</section>

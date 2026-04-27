@@ -1,0 +1,46 @@
+@model IEnumerable<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<IEnumerable<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>>
+@{
+    if (Model is null) { return; }
+}
+<div class="umb-block-grid__layout-container">
+    @foreach (var item in Model)
+    {
+        var alias = item.Content.ContentType.Alias;
+        var partial = $"blockgrid/Components/{alias}";
+
+        var spanColumns = item.ColumnSpan ?? 12;
+        var spanRows = item.RowSpan ?? 1;
+
+        <div class="umb-block-grid__layout-item"
+             data-block-alias="@alias"
+             style="--umb-block-grid--item-column-span: @spanColumns; --umb-block-grid--item-row-span: @spanRows;">
+            @{
+                // Per-block-type partial. Falls back to a generic renderer if not present.
+                try
+                {
+                    @await Html.PartialAsync(partial, item)
+                }
+                catch (InvalidOperationException)
+                {
+                    @await Html.PartialAsync("blockgrid/Components/_fallback", item)
+                }
+            }
+
+            @if (item.Areas?.Any() == true)
+            {
+                <div class="umb-block-grid__area-container"
+                     style="--umb-block-grid--area-grid-columns: @(item.AreaGridColumns ?? 12);">
+                    @foreach (var area in item.Areas)
+                    {
+                        <div class="umb-block-grid__area"
+                             data-area-alias="@area.Alias"
+                             style="--umb-block-grid--area-column-span: @(area.ColumnSpan); --umb-block-grid--area-row-span: @(area.RowSpan);">
+                            @await Html.PartialAsync("blockgrid/areas", area.Items)
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
